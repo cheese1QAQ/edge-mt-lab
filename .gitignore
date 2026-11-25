@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+coverage.xml
+dist/
+build/
+*.egg-info/
+
+# Local model weights, quantized artifacts & large datasets (NEVER commit multi-GB files!)
+models/
+weights/
+checkpoints/
+caches/
+*.gguf
+*.bin
+*.safetensors
+*.onnx
+*.pt
+*.pth
+*.ckpt
+*.imatrix
+*.dat
+
+# Local scratch & generated logs
+logs/
+tmp/
+.ipynb_checkpoints/
+
+# OS & Editors
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp

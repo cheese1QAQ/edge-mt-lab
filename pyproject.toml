@@ -1,0 +1,76 @@
+[build-system]
+requires = ["hatchling>=1.25.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "edge-mt-lab"
+version = "0.1.0"
+description = "Frontier LLM lightweighting and low-VRAM (2-4GB) machine translation research lab anchored on Qwen and DeepSeek."
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.10"
+authors = [{ name = "cheese1QAQ", email = "cheese1QAQ@gmail.com" }]
+keywords = [
+  "llm",
+  "quantization",
+  "pruning",
+  "distillation",
+  "machine-translation",
+  "rag",
+  "ocr",
+  "qwen",
+  "deepseek",
+  "low-vram",
+]
+dependencies = [
+  "pydantic>=2.7.0",
+  "PyYAML>=6.0.1",
+]
+
+[project.optional-dependencies]
+dev = [
+  "mypy>=1.11.0",
+  "pytest>=8.3.0",
+  "pytest-cov>=5.0.0",
+  "ruff>=0.7.0",
+  "types-PyYAML>=6.0.12",
+]
+
+[project.scripts]
+edge-mt-lab = "edge_mt_lab.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/edge_mt_lab"]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+  "E",   # pycodestyle errors
+  "W",   # pycodestyle warnings
+  "F",   # pyflakes
+  "I",   # isort
+  "B",   # flake8-bugbear
+  "UP",  # pyupgrade
+  "SIM", # flake8-simplify
+  "RUF", # ruff-specific rules
+]
+ignore = [
+  "RUF001", # allow full-width CJK punctuation in multilingual translation samples
+  "RUF002",
+  "RUF003",
+]
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+warn_unused_configs = true
+mypy_path = "src"
+packages = ["edge_mt_lab"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

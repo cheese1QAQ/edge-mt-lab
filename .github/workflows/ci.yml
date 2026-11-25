@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality-gate:
+    name: Quality & Benchmark Gate (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.12"]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install Python ${{ matrix.python-version }} and dependencies
+        run: |
+          uv python install ${{ matrix.python-version }}
+          uv sync --python ${{ matrix.python-version }} --extra dev
+
+      - name: Lint & format check (ruff)
+        run: |
+          uv run ruff check src tests
+          uv run ruff format --check src tests
+
+      - name: Static type check (mypy --strict)
+        run: uv run mypy
+
+      - name: Run unit tests (pytest)
+        run: uv run pytest --cov=edge_mt_lab --cov-report=xml --cov-report=term-missing
+
+      - name: Hardware doctor & benchmark dry-run smoke check
+        run: |
+          uv run edge-mt-lab doctor
+          uv run edge-mt-lab bench --dry-run
