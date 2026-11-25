@@ -20,7 +20,7 @@
 
 | 模块 | 论文 | 链接 | 状态 | 笔记文件 |
 | :---: | :--- | :--- | :---: | :--- |
-| 0 | A Survey on Model Compression for LLMs | [arXiv:2308.07633](https://arxiv.org/abs/2308.07633) | `[ ]` 待读 | - |
+| 0 | A Survey on Model Compression for LLMs | [arXiv:2308.07633](https://arxiv.org/abs/2308.07633) | `[x]` 已读 | [00-llm-compression-survey-2024.md](00-llm-compression-survey-2024.md) · [交互脑图](00-llm-compression-survey-2024-mindmap.html) |
 | 0 | UniComp Unified Compression Eval | [arXiv:2602.09130](https://arxiv.org/abs/2602.09130) | `[ ]` 待读 | - |
 | 1 | Qwen3 Technical Report | [arXiv:2505.09388](https://arxiv.org/abs/2505.09388) | `[ ]` 待读 | - |
 | 1 | DeepSeek-V2 (MLA + MoE) | [arXiv:2405.04434](https://arxiv.org/abs/2405.04434) | `[ ]` 待读 | - |
