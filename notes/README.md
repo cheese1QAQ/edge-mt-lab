@@ -32,12 +32,17 @@
 | 2 | SpinQuant | [arXiv:2405.16406](https://arxiv.org/abs/2405.16406) | `[ ]` 待读 | - |
 | 2 | QTIP | [arXiv:2406.11235](https://arxiv.org/abs/2406.11235) | `[ ]` 待读 | - |
 | 2 | ParetoQ | [arXiv:2502.02631](https://arxiv.org/abs/2502.02631) | `[ ]` 待读 | - |
+| 2 | EvoPress (逐层进化混合压缩) | [arXiv:2410.14649](https://arxiv.org/abs/2410.14649) | `[ ]` 待读 | - |
+| 2 | BitStack (单权重动态弹性显存) | [arXiv:2410.23918](https://arxiv.org/abs/2410.23918) | `[ ]` 待读 | - |
+| 2 | Prune-then-Quantize or Quantize-then-Prune? | [arXiv:2603.18426](https://arxiv.org/abs/2603.18426) | `[ ]` 待读 | - |
+| 3 | SLEB (迭代式逐层消除) | [arXiv:2402.09025](https://arxiv.org/abs/2402.09025) | `[ ]` 待读 | - |
 | 3 | Minitron Pruning & Distillation | [arXiv:2407.14679](https://arxiv.org/abs/2407.14679) | `[ ]` 待读 | - |
 | 3 | SVD-LLM V2 | [arXiv:2503.12340](https://arxiv.org/abs/2503.12340) | `[ ]` 待读 | - |
 | 3 | AdaptiVocab | [arXiv:2503.19693](https://arxiv.org/abs/2503.19693) | `[ ]` 待读 | - |
 | 4 | MARLIN (Ampere 4-bit Kernel) | [arXiv:2408.11743](https://arxiv.org/abs/2408.11743) | `[ ]` 待读 | - |
 | 4 | SGLang (RadixAttention) | [arXiv:2312.07104](https://arxiv.org/abs/2312.07104) | `[ ]` 待读 | - |
 | 4 | KIVI (2-bit KV Cache) | [arXiv:2402.02750](https://arxiv.org/abs/2402.02750) | `[ ]` 待读 | - |
+| 4 | PyramidKV (金字塔逐层 KV 分配) | [arXiv:2406.02069](https://arxiv.org/abs/2406.02069) | `[ ]` 待读 | - |
 | 4 | EAGLE-3 | [arXiv:2503.01840](https://arxiv.org/abs/2503.01840) | `[ ]` 待读 | - |
 | 5 | ALMA / Seed-X / TranslateGemma | [arXiv:2601.09012](https://arxiv.org/abs/2601.09012) | `[ ]` 待读 | - |
 | 5 | kNN-MT / RAGtrans / Terminology | [arXiv:2412.04342](https://arxiv.org/abs/2412.04342) | `[ ]` 待读 | - |

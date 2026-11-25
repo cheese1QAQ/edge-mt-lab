@@ -22,20 +22,22 @@
 ## 2. 四大递进式研究主线
 
 ### Track 1：比特–规模缩放律与前沿权重量化（`experiments/tracks/01-quantization/`）
-* **研究问题**：在严格 2.0 / 3.0 / 4.0 GB 显存下，**参数规模**与**比特精度**的翻译质量 Pareto 前沿在哪里？
+* **研究问题**：在严格 2.0 / 3.0 / 4.0 GB 显存下，**参数规模**、**比特精度**与**逐层非均匀预算分配**的翻译质量 Pareto 前沿在哪里？
 * **核心对比组**：
   1. 经典基线：`FP16`（云端/高显存上限）vs `AWQ` / `GPTQ` / `GGUF Q4_K_M`
   2. 离群值旋转前沿：**SpinQuant** / **QuaRot** / **FlatQuant**（验证 W4A16 与 W4A4/KV4）
   3. 极限 2~3-bit 压榨：**QTIP** / **QuIP#** / **Unsloth Dynamic 2.0**（挑战把 7B–8B 塞进 2.5~3.2 GB）
-  4. 原生低比特与恢复：**BitNet b1.58 2B4T**、**ParetoQ** 缩放律检验、以及 **QLoRA 量化后恢复微调**
+  4. **翻译感知的逐层混合精度与弹性显存**：**EvoPress**（联合搜索逐层比特/删层配比）、**Layer-Wise Quantization / SliM-LLM**、**BitStack**（单份权重按剩余显存动态伸缩），以及剪枝-量化先后顺序消融
+  5. 原生低比特与恢复：**BitNet b1.58 2B4T**、**ParetoQ** 缩放律检验、以及 **QLoRA 量化后恢复微调**
 
-### Track 2：结构化剪枝、词表裁剪、SVD 与 MLA 改造（`experiments/tracks/02-pruning-vocab-mla/`）
-* **研究问题**：除了降低每参数比特数，能否针对 **Qwen（152K 词表 + GQA）** 做结构级瘦身，直接腾出 20%~35% 显存？
+### Track 2：逐层剪枝、词表裁剪、SVD 与 MLA 改造（`experiments/tracks/02-pruning-vocab-mla/`）
+* **研究问题**：除了降低每参数比特数，能否针对 **Qwen（152K 词表 + GQA + 中深层冗余）** 做结构级与逐层异构瘦身，直接腾出 20%~35% 显存？
 * **核心方法**：
-  1. **语对定向词表裁剪（AdaptiVocab / VocabTrim）**：裁掉 Qwen 词表中非目标语种（如保留中/英/日），回收 300~600 MB Embedding & LM Head 显存并加速解码。
-  2. **Qwen → DeepSeek MLA 改造（TransMLA / MHA2MLA）**：配合 **KIVI 2-bit KV**，压扁长文档/RAG 场景下的 KV Cache。
-  3. **结构化剪枝 + 轻量蒸馏（Minitron + MiniLLM）** 与 **激活感知低秩分解（SVD-LLM V2）**。
-  4. **Ampere 推理加速**：评测 **Marlin / BitBLAS / EAGLE-3 + FR-Spec** 在 3060 8GB 上的真实 TTFT 与 tok/s。
+  1. **逐层深度剪枝与层合并（SLEB / ShortGPT / LaCo / Shortened LLaMA）**：用双语翻译校准集识别冗余中深层并迭代删层/折叠合并，配合极轻量 QLoRA 恢复。
+  2. **语对定向词表裁剪（AdaptiVocab / VocabTrim）**：裁掉 Qwen 词表中非目标语种（如保留中/英/日），回收 300~600 MB Embedding & LM Head 显存并加速解码。
+  3. **Qwen → DeepSeek MLA 改造（TransMLA / MHA2MLA）+ 逐层 KV 压缩（PyramidKV / KIVI 2-bit KV）**：压扁长文档/RAG 场景下的 KV Cache。
+  4. **结构化剪枝 + 轻量蒸馏（Minitron + MiniLLM）** 与 **逐层异构低秩分解（SVD-LLM V2）**。
+  5. **Ampere 推理加速**：评测 **Marlin / BitBLAS / EAGLE-3 + FR-Spec** 在 3060 8GB 上的真实 TTFT 与 tok/s。
 
 ### Track 3：翻译外部知识补偿（RAG / TM / 术语约束 / kNN-MT）（`experiments/tracks/03-rag-knn-mt/`）
 * **研究问题**：将专有名词、领域词典与历史译文卸载出小模型权重，究竟能“等价放大”多少模型参数或抵消多少比特的量化损失？

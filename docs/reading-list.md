@@ -11,9 +11,9 @@
 ```mermaid
 flowchart LR
     M0["0. 全景综述与统一评测"] --> M1["1. 基座报告: Qwen 与 DeepSeek"]
-    M1 --> M2["2. 权重量化: 旋转 / 2-bit / 1.58-bit"]
-    M1 --> M3["3. 结构瘦身: 剪枝 / SVD / 蒸馏 / 词表裁剪"]
-    M1 --> M4["4. 推理系统: 低比特算子 / KV-MLA / 投机解码"]
+    M1 --> M2["2. 权重量化: 旋转 / 2-bit / 1.58-bit / 逐层混合精度"]
+    M1 --> M3["3. 结构瘦身: 逐层剪枝 / SVD / 蒸馏 / 词表裁剪"]
+    M1 --> M4["4. 推理系统: 低比特算子 / 逐层KV-MLA / 投机解码"]
     M2 --> TARGET["核心目标: 2-4 GB 显存高可用翻译系统"]
     M3 --> TARGET
     M4 --> TARGET
@@ -25,22 +25,22 @@ flowchart LR
 
 ## 二、建议阅读节奏与优先级说明
 
-面对 60+ 篇文献，**切忌从头到尾逐字精读**。建议按优先级标记分三阶段推进：
+面对 **77 条条目（含配套延伸共 85 篇核验文献）**，**切忌从头到尾逐字精读**。建议按优先级标记分三阶段推进：
 
-* 🔴 **核心精读（约 16 篇）**：决定你的技术认知底座与核心实验设计，建议精读方法、实验消融与公式推导。
-* 🟡 **重点泛读（约 26 篇）**：读摘要、引言、核心架构图与主要结果表，建立各方法之间的优劣边界。
-* 🟢 **按需深挖（约 20 篇）**：当你确定具体子课题（例如决定动手改词表、写 Marlin/BitBLAS 评测或复现 kNN-MT）时再回头细读。
+* 🔴 **核心精读（33 条）**：决定你的技术认知底座与核心实验设计，建议精读方法、实验消融与公式推导（可先挑每个模块里最紧贴当前实验的 2~3 篇切入）。
+* 🟡 **重点泛读（35 条）**：读摘要、引言、核心架构图与主要结果表，建立各方法之间的优劣边界。
+* 🟢 **按需深挖（9 条）**：当你确定具体子课题（例如决定动手改词表、写 LUT/CPU 算子或做免数据谱分析）时再回头细读。
 
 > [!TIP]
 > **四周快速入门路线建议**
 > - **第 1 周（建框架 + 摸透基座）**：读模块 0（1~2 篇综述）+ 模块 1（Qwen3、DeepSeek-V2/V3/R1、TransMLA）。搞清楚 Qwen 与 DeepSeek 的结构差异（尤其是 GQA vs MLA、152K 大词表代价、蒸馏机制）。
-> - **第 2 周（攻克量化核心）**：读模块 2 中所有 🔴 论文（SmoothQuant/AWQ → QuaRot/SpinQuant → QTIP → BitNet b1.58 & ParetoQ）。搞清楚“离群值”“旋转平滑”“2-bit vs 4-bit 缩放律”三大核心概念。
-> - **第 3 周（结构瘦身 + 系统瓶颈）**：读模块 3（Minitron、SVD-LLM V2、AdaptiVocab）+ 模块 4（Marlin、KIVI、SGLang、EAGLE-3）。把视野从“算法压缩率”拉到“3060 真实显存与吞吐”。
+> - **第 2 周（攻克量化与逐层分配核心）**：读模块 2 中所有 🔴 论文（SmoothQuant/AWQ → SpinQuant → QTIP → ParetoQ → EvoPress / BitStack / 剪枝量化顺序）。搞清楚“离群值”“旋转平滑”“2-bit vs 4-bit 缩放律”“逐层非均匀比特分配”四大核心概念。
+> - **第 3 周（逐层剪枝 + 结构瘦身 + 系统瓶颈）**：读模块 3（SLEB、Minitron、SVD-LLM V2、AdaptiVocab）+ 模块 4（Marlin、KIVI、PyramidKV、SGLang、EAGLE-3）。把视野从“算法压缩率”拉到“3060 真实显存与吞吐”。
 > - **第 4 周（翻译补偿 + OCR 协同）**：读模块 5（ALMA/Seed-X/TranslateGemma + kNN-MT/RAGtrans/术语集成 + xCOMET/MetricX-24）+ 模块 6（DeepSeek-OCR、PaddleOCR-VL、Qwen3-VL）。形成自己的独立实验立项方案。
 
 ---
 
-## 三、分模块文献清单（共 62 篇）
+## 三、分模块文献清单（共 77 条 / 85 篇文献）
 
 ### 模块 0：全景综述与跨范式统一评测（先建立上帝视角）
 
@@ -108,14 +108,40 @@ flowchart LR
 | 🔴 | [ParetoQ: Scaling Laws in Extremely Low-bit LLM Quantization](https://arxiv.org/abs/2502.02631) | 2025.02 | 统一评估 1 / 1.58 / 2 / 3 / 4-bit 的缩放律，揭示 2-bit 与 3-bit 之间存在显著表征相变 | **研究立项必读**：直接为“固定 2~4 GB 预算下如何权衡参数量与比特数”提供理论依据 |
 | 🟢 | [QuEST: Stable Training of LLMs with 1-Bit Weights and Activations](https://arxiv.org/abs/2502.05003) | 2025 / NeurIPS | 提出 Hadamard 归一化与信赖域梯度估计，实现稳定的 1-bit 权重+激活（W1A1）训练 | 了解极低比特 QAT 训练稳定性的前沿解法 |
 
+#### 2.5 前沿四：逐层混合精度量化、动态显存伸缩与剪枝-量化联合
+
+Transformer 首尾层与 `attn_v`/`ffn_down` 极度敏感，而中间层高度冗余。按层敏感度**非均匀分配比特（甚至联合删层/剪枝）**，在严格 2~4 GB 预算下往往全面优于全模型一刀切量化。
+
+| 优先级 | 论文与链接 | 年份 / 会议 | 核心贡献 | 对本研究的重点阅读价值 |
+| :---: | :--- | :--- | :--- | :--- |
+| 🔴 | [EvoPress: Accurate Dynamic Model Compression via Evolutionary Search](https://arxiv.org/abs/2410.14649) | 2025 / ICML | 用进化搜索在极短时间内搜出最优逐层非均匀压缩配比，**统一涵盖逐层混合精度量化、逐层删层（Layer Drop）与逐层稀疏** | **逐层压缩核心必读**：可直接改用双语翻译校准集搜索 Qwen3 在 2.5 / 3.0 GB 下的最优逐层配比 |
+| 🟡 | [Layer-Wise Quantization: A Pragmatic and Effective Method for Quantizing LLMs Beyond Integer Bit-Levels](https://arxiv.org/abs/2406.17415) | 2024.06 | 基于层敏感度（Embedding 漂移等）逐层分配不同整数位宽，实现任意非整数平均位宽（如 2.75-bit） | 思路直观、易复现，适合做逐层混合精度基线 |
+| 🟡 | [SliM-LLM: Salience-Driven Mixed-Precision Quantization for Large Language Models](https://arxiv.org/abs/2405.14917) | 2024.05 | 提出显著度驱动的混合精度量化框架，在 2~3-bit 极端压缩区间大幅保留模型精度 | 与 EvoPress 对照，研究细粒度显著度指标对翻译精度的影响 |
+| 🔴 | [BitStack: Any-Size Compression of Large Language Models in Variable Memory Environments](https://arxiv.org/abs/2410.23918) | 2024.10 | 通过残差 SVD 将权重分解为可叠加“比特栈”，**单份权重可在推理时按剩余显存动态增减每层精度** | **极度契合 OCR 共存场景**：OCR 高负载时把 LLM 临时压到 ~2.2 GB，空闲时瞬间恢复到 ~3.8 GB，免重新加载模型 |
+| 🔴 | [Prune-then-Quantize or Quantize-then-Prune? Understanding the Impact of Compression Order in Joint Model Compression](https://arxiv.org/abs/2603.18426) | 2026.03 | 系统剖析联合压缩中**先剪枝再量化**与**先量化再剪枝**的耦合误差传播规律 | 打算同时做“逐层剪枝 + 低比特量化”前必读，避免踩联合压缩顺序坑 |
+
 > [!NOTE]
 > **工程实践补充阅读**：除上述学术论文外，工程落地阶段建议一并阅读 **Unsloth Dynamic 2.0 GGUF**（按层敏感度与 KL 散度动态混合量化）与 **`llama.cpp` `imatrix` / K-Quants / I-Quants** 的技术说明——它们常在消费级显卡上作为极强工程基线与学术方法对照。
 
 ---
 
-### 模块 3：结构化剪枝、低秩分解、知识蒸馏与词表裁剪
+### 模块 3：逐层剪枝、结构化瘦身、低秩分解、知识蒸馏与词表裁剪
 
-量化压缩“每个参数的比特数”，本模块压缩“参数数量本身”——尤其对 **Qwen 的 152K 大词表** 和 **小模型专项能力迁移** 效果惊人。
+量化压缩“每个参数的比特数”，本模块压缩“层数与参数量本身”——尤其对 **中深层冗余裁剪**、**Qwen 的 152K 大词表** 和 **小模型专项能力迁移** 效果惊人。
+
+#### 3.1 逐层深度剪枝与非均匀层稀疏度
+
+| 优先级 | 论文与链接 | 年份 / 会议 | 核心贡献 | 对本研究的重点阅读价值 |
+| :---: | :--- | :--- | :--- | :--- |
+| 🟡 | [ShortGPT: Layers in Large Language Models are More Redundant Than You Expect](https://arxiv.org/abs/2403.03853) | 2024.03 | 定义 **BI（Block Influence）** 余弦相似度冗余指标，直接按层重要性删除最冗余的整层 Transformer | 最轻便的整层删除基线：删层后仍是标准稠密架构，3060 显存、KV 与延迟同步线性下降 |
+| 🟡 | [The Unreasonable Ineffectiveness of the Deeper Layers](https://arxiv.org/abs/2403.17887) | 2024.03 | 用层间角距离系统揭示深层成片冗余现象，删去大段深层后用极轻量 QLoRA 即可快速恢复 | 单卡可复现，适合研究“翻译任务下哪些深层可安全裁剪” |
+| 🔴 | [SLEB: Streamlining LLMs through Redundancy Verification and Elimination of Transformer Blocks](https://arxiv.org/abs/2402.09025) | 2024 / ICML | 指出删掉一层后剩余层的重要性会动态变化，提出**迭代式逐层冗余验证与消除**，避免一次性删多层崩坏 | **整层剪枝必读**：比 ShortGPT 更稳健，非常适合对连贯性敏感的机器翻译 |
+| 🟡 | [Shortened LLaMA: Depth Pruning for Large Language Models with Comparison of Retraining Methods](https://arxiv.org/abs/2402.02834) | 2024.02 | 系统比较不同深度（整层）剪枝指标与后续 LoRA / 全参恢复微调策略的性价比 | 为“删层后如何低成本恢复翻译质量”提供方法论对照 |
+| 🟡 | [LaCo: Large Language Model Pruning via Layer Collapse](https://arxiv.org/abs/2402.11187) | 2024.02 | 不直接丢弃冗余层，而是将相邻多层权重差分**折叠合并（Layer Collapse）**至前一层，免重训保留更多知识 | 对保住多语种词汇和跨语种映射知识比硬删更温和 |
+| 🟢 | [Outlier Weighed Layerwise Sparsity (OWL): A Missing Secret Sauce for Pruning LLMs to High Sparsity](https://arxiv.org/abs/2310.05175) | 2024 / ICML | 按每层激活离群值比例非均匀分配剪枝率（离群值多的层少剪、少的层狠剪），高稀疏下显著保真 | 揭示层离群值与抗剪能力的强相关性（注意非结构化稀疏在 3060 上难换实速，更宜迁移为结构化剪枝率指导） |
+| 🟢 | [AlphaPruning: Using Heavy-Tailed Self Regularization Theory for Improved Layer-wise Pruning of Large Language Models](https://arxiv.org/abs/2410.10912) | 2024 / NeurIPS | 基于重尾自正则化理论（HTSR / 权重矩阵特征谱幂律指数 $\alpha$）**免校准数据**计算逐层最优剪枝率 | 极优雅的理论工具，可用于免数据快速初筛 Qwen 各层敏感度 |
+
+#### 3.2 通用结构化剪枝、低秩分解、知识蒸馏与词表裁剪
 
 | 优先级 | 论文与链接 | 年份 / 会议 | 核心贡献 | 对本研究的重点阅读价值 |
 | :---: | :--- | :--- | :--- | :--- |
@@ -147,6 +173,8 @@ flowchart LR
 | 🔴 | [KIVI: A Tuning-Free Asymmetric 2bit Quantization for KV Cache](https://arxiv.org/abs/2402.02750) | 2024 / ICML | 揭示 Key 通道离群值与 Value token 分布差异，实现免微调 **Key 按通道 / Value 按 token 的 2-bit KV 量化** | 极低显存下保住长上下文与 RAG 片段的关键论文 |
 | 🟢 | [KVQuant: Towards 10 Million Context Length LLM Inference with KV Cache Quantization](https://arxiv.org/abs/2401.18079) | 2024 / NeurIPS | 提出 Pre-RoPE Key 量化、非均匀敏感度码本与稀疏离群值保留，推进极低比特 KV 压缩 | 与 KIVI 对照，深挖 RoPE 与 KV 量化的耦合细节 |
 | 🟢 | [SnapKV: LLM Knows What You are Looking for Before Generation](https://arxiv.org/abs/2404.14469) | 2024 / NeurIPS | 利用观测窗口注意力聚合自动筛选重要历史 KV，免微调大幅压缩长提示词显存 | 适合长文档/多轮对话翻译时的动态 KV 裁剪 |
+| 🔴 | [PyramidKV: Dynamic KV Cache Compression based on Pyramidal Information Funneling](https://arxiv.org/abs/2406.02069) | 2024.06 | 发现浅层注意力发散、深层高度聚合的“信息漏斗”规律，按**金字塔形逐层递减分配 KV Cache 预算** | **逐层 KV 压缩必读**：把有限 KV 显存优先给浅层，和逐层权重压缩形成完美呼应 |
+| 🟡 | [More Tokens, Lower Precision: Towards the Optimal Token-Precision Trade-off in KV Cache Compression](https://arxiv.org/abs/2412.12706) | 2024.12 | 在固定 KV 显存下联合权衡逐层的“保留 token 数量 vs 量化比特精度” | 为长文档 RAG 翻译中的 KV 预算分配提供联合最优原则 |
 | 🟡 | [Better & Faster Large Language Models via Multi-token Prediction (MTP)](https://arxiv.org/abs/2404.19737) | 2024 / ICML | 训练时并行预测未来多个 token，兼顾更强表征与原生自投机解码提速 | DeepSeek-V3 MTP 的理论源头 |
 | 🔴 | [EAGLE-3: Scaling up Inference Acceleration of Large Language Models via Training-Time Test](https://arxiv.org/abs/2503.01840) | 2025.03 | 融合多层特征与训练期测试展开（TTT），以极轻量草稿头实现 3×~6× 无损解码加速 | **低带宽显卡提速前沿**：配合 VocabTrim，仅加极少显存即可让 3060 解码速度起飞 |
 
@@ -197,14 +225,15 @@ flowchart LR
 
 ---
 
-## 四、针对“Qwen / DeepSeek + 2~4 GB 翻译”的 4 个高价值交叉研究切入点
+## 四、针对“Qwen / DeepSeek + 2~4 GB 翻译”的 5 个高价值交叉研究切入点
 
-读文献时，建议带着以下 4 个具体问题去读，这样读完就能直接产出**独立研究项目的核心实验设计**：
+读文献时，建议带着以下 5 个具体问题去读，这样读完就能直接产出**独立研究项目的核心实验设计**：
 
 1. **比特-规模 Pareto 前沿（模块 1 + 2）**：在严格 **3.0 GB 权重预算**下，对比 `Qwen3-4B @ 4-bit (SpinQuant/AWQ)`、`Qwen3-8B @ 2.5-bit (QTIP/Dynamic 2.0)`、`Qwen3-8B 剪枝蒸馏→4B @ 4-bit (Minitron)` 与 `BitNet b1.58 2B4T`，在 **xCOMET / 术语命中率 / 3060 实测 tok/s** 上谁才是真王者？
-2. **Qwen 架构的“翻译专项极限瘦身”（模块 1 + 3 + 4）**：将 **AdaptiVocab（裁掉 Qwen 152K 词表中非目标语种 token）** + **TransMLA / MHA2MLA（把 Qwen GQA 改造成 DeepSeek 风格 MLA）** + **KIVI 2-bit KV** 叠加，究竟能省下多少显存、长文档翻译掉点几何？
-3. **外部记忆对低比特退化的“杠杆补偿”（模块 2 + 5）**：把同一个 Qwen 模型分别量化到 FP16 / 4-bit / 3-bit / 2-bit，测量叠加 **CPU Trie 术语表 + TM-RAG + 解码期软约束/kNN-MT** 后的质量曲线——量化证明：**外部系统能等价抵消多少比特的量化损失？**
-4. **8 GB 卡上的多模态分工博弈（模块 5 + 6）**：在 RTX 3060 8GB 总预算下，对比 **「CPU 轻量化 OCR + GPU 3 GB Qwen + RAG」** 与 **「GPU PaddleOCR-VL / DeepSeek-OCR + 轻量化 Qwen」** 与 **「端到端 4B 多模态翻译模型（如 TranslateGemma-4B / Qwen3-VL 小尺寸）」** 在含噪声截图/复杂文档上的端到端延迟与准确率。
+2. **翻译感知的逐层异构压缩与动态显存伸缩（模块 2 + 3 + 4）**：用**双语翻译 + 术语/OCR 噪声校准集**取代通用英文 WikiText，驱动 **SLEB 迭代删层 / EvoPress 逐层混合精度 + PyramidKV 逐层 KV 预算**，对比通用校准与翻译感知逐层分配的掉点差距；并探索借鉴 **BitStack** 实现“OCR 忙碌时 2.2 GB ↔ 空闲时 3.8 GB”的弹性显存切换。
+3. **Qwen 架构的“翻译专项极限瘦身”（模块 1 + 3 + 4）**：将 **AdaptiVocab（裁掉 Qwen 152K 词表中非目标语种 token）** + **TransMLA / MHA2MLA（把 Qwen GQA 改造成 DeepSeek 风格 MLA）** + **KIVI 2-bit KV** 叠加，究竟能省下多少显存、长文档翻译掉点几何？
+4. **外部记忆对低比特退化的“杠杆补偿”（模块 2 + 5）**：把同一个 Qwen 模型分别量化到 FP16 / 4-bit / 3-bit / 2-bit，测量叠加 **CPU Trie 术语表 + TM-RAG + 解码期软约束/kNN-MT** 后的质量曲线——量化证明：**外部系统能等价抵消多少比特的量化损失？**
+5. **8 GB 卡上的多模态分工博弈（模块 5 + 6）**：在 RTX 3060 8GB 总预算下，对比 **「CPU 轻量化 OCR + GPU 3 GB Qwen + RAG」** 与 **「GPU PaddleOCR-VL / DeepSeek-OCR + 轻量化 Qwen」** 与 **「端到端 4B 多模态翻译模型（如 TranslateGemma-4B / Qwen3-VL 小尺寸）」** 在含噪声截图/复杂文档上的端到端延迟与准确率。
 
 ---
 

@@ -10,7 +10,7 @@
 
 ## 核心研究命题
 
-1. **比特–规模 Pareto 前沿**：在严格 **2 / 3 / 4 GB 显存预算**内，同样体积下“8B @ 2~3-bit（QTIP / SpinQuant / Dynamic 2.0）”与“4B @ 4-bit”以及“8B 结构化剪枝蒸馏→4B（Minitron）”与“原生 1.58-bit（BitNet）”谁在翻译任务上最优？
+1. **比特–规模与逐层异构 Pareto 前沿**：在严格 **2 / 3 / 4 GB 显存预算**内，对比“8B @ 2~3-bit（QTIP / SpinQuant / Dynamic 2.0）”、“4B @ 4-bit”、“翻译感知逐层混合精度与删层（EvoPress / SLEB / BitStack）”、“Minitron 剪枝蒸馏”与“原生 1.58-bit（BitNet）”在翻译任务上的最优前沿。
 2. **Qwen × DeepSeek 架构级融合瘦身**：将 **语对词表裁剪（AdaptiVocab / VocabTrim）**（削减 Qwen 152K 词表冗余）与 **TransMLA / MHA2MLA**（将 GQA 转为 DeepSeek 风格低秩 MLA）及 **KIVI 2-bit KV** 叠加，量化评估显存节省与长文翻译质量损益。
 3. **非参数外部记忆的能力杠杆**：通过 **CPU 零显存 Trie 术语表 + 翻译记忆 TM-RAG + 解码期术语软约束 / kNN-MT + QE 路由精修**，把专有名词和领域知识卸载出模型权重，定量回答“外部系统能抵消多少比特的量化退化”。
 4. **8 GB 卡上的 OCR + 翻译全链路共存**：对比「CPU 轻量化 OCR + GPU 3 GB Qwen + RAG」与「紧凑 VLM / DeepSeek-OCR / PaddleOCR-VL 管线」在含噪声截图与文档翻译上的真实延迟、峰值显存与准确率。
@@ -24,7 +24,7 @@ edge-mt-lab/
 ├── .github/                  # GitHub Actions CI/Release、Dependabot、Issue & PR 模板
 ├── docs/
 │   ├── research-plan.md      # 硬件物理边界分析、四大研究主线与评测体系
-│   └── reading-list.md       # 62 篇经核验的前沿论文精读清单（Qwen/DeepSeek 路线）
+│   └── reading-list.md       # 77 条 / 85 篇经核验的前沿论文精读清单（含逐层量化/剪枝专题）
 ├── notes/                    # 论文精读笔记库与统一笔记模板
 ├── experiments/
 │   ├── tracks/               # 4 条研究主线实验目录与记录规范
@@ -59,7 +59,7 @@ make bench-dry
 ## 导航文档
 
 - [研究总方案与四大实验主线](docs/research-plan.md)
-- [前沿文献精读清单（62 篇核验论文 + 四周路线图）](docs/reading-list.md)
+- [前沿文献精读清单（77 条 / 85 篇核验论文 + 四周路线图）](docs/reading-list.md)
 - [论文笔记索引与模板](notes/README.md)
 - [实验目录与报告规范](experiments/README.md)
 - [贡献与可复现规范](CONTRIBUTING.md)
